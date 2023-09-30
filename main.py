@@ -1,4 +1,3 @@
-#!/usr/bin/python3py
 # MaTeX: A LaTeX preprocessor
 # Copyright 2023 OrthoPole. All rights reserved.
 
@@ -8,7 +7,7 @@ from io import StringIO
 import sys
 
 
-VERSION = '1.0.1'
+VERSION = '1.1.0'
 AUTHOR = 'OrthoPole'
 YEAR = '2023'
 DESCRIPTION = 'A LaTeX preprocessor'
@@ -279,6 +278,69 @@ class MatexCompiler:
                     self._print(r'\usepackage{%s}' % package)
                 else:
                     self._print(r'\usepackage[%s]{%s}' % (option, package))
+
+            elif head == 'ENV':
+                mid1 = tail.upper().find(' PRE ')
+                mid2 = tail.upper().find(' POST ')
+                mid3 = tail.upper().find(' OF ')
+                mid4 = tail.upper().find(' DEFAULT ')
+                if mid1 < 0:
+                    return self._error('`PRE` key word expected')
+                if mid2 < 0:
+                    return self._error('`POST` key word expected')
+                environment = tail[:mid1].strip()
+                pre = tail[mid1+5:mid2].strip()
+                if mid3 < 0 and mid4 < 0:
+                    post = tail[mid2+6:].strip()
+                    length = 0
+                    default = None
+                elif mid3 >= 0 and mid4 < 0:
+                    post = tail[mid2+6:mid3].strip()
+                    length = tail[mid2+6:mid3].strip()
+                    default = None
+                elif mid3 < 0 and mid4 >= 0:
+                    return self._error('cannot set default value for an environment without parameters')
+                else:
+                    post = tail[mid2+6:mid3].strip()
+                    length = tail[mid3+4:mid4].strip()
+                    default = tail[mid4+8:].strip()
+                try:
+                    length = int(length)
+                except ValueError:
+                    return self._error(f'parameter length should be an integer (got "{length}" instead)')
+                if length < 0:
+                    return self._error(f'parameter length should be non-negative (got {length} instead)')
+                if default is None:
+                    self._print(r'\newenvironment{%s}[%d]{%s}{%s}' % (environment, length, pre, post))
+                else:
+                    self._print(r'\newenvironment{%s}[%d][%s]{%s}{%s}' % (environment, length, default, pre, post))
+
+            elif head == 'THM':
+                mid1 = tail.upper().find(' COUNTER ')
+                mid2 = tail.upper().find(' NAME ')
+                mid3 = tail.upper().find(' UNDER ')
+                if mid2 < 0:
+                    return self._error('`NAME` key word expected')
+                if mid1 < 0:
+                    theorem = tail[:mid2].strip()
+                    counter = None
+                else:
+                    theorem = tail[:mid1].strip()
+                    counter = tail[mid1+9:mid2].strip()
+                if mid3 < 0:
+                    name = tail[mid2+5:].strip()
+                    under = None
+                else:
+                    name = tail[mid2+5:mid3].strip()
+                    under = tail[mid3+6:].strip()
+                if counter is None and under is None:
+                    self._print(r'\newtheorem{%s}{%s}' % (theorem, name))
+                elif counter is None and under is not None:
+                    self._print(r'\newtheorem{%s}{%s}[%s]' % (theorem, name, under))
+                elif counter is not None and under is None:
+                    self._print(r'\newtheorem{%s}[%s]{%s}' % (theorem, name, counter))
+                else:
+                    self._print(r'\newtheorem{%s}[%s]{%s}[%s]' % (theorem, name, counter, under))
 
             elif head == 'RAW':
                 self._print(tail.strip())
