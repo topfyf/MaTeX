@@ -296,7 +296,7 @@ class MatexCompiler:
                 for value in values:
                     self._input.seek(loop_start)
                     kwargs[variable] = value
-                    if not self._parse_v2(**kwargs):
+                    if not self._parse_v1(**kwargs):
                         return False
 
             elif head == 'END':
