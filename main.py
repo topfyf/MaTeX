@@ -358,6 +358,7 @@ class MatexCompiler:
                 mid1 = tail.upper().find(' COUNTER ')
                 mid2 = tail.upper().find(' NAME ')
                 mid3 = tail.upper().find(' UNDER ')
+                mid4 = tail.upper().find(' STYLE ')
                 if mid2 < 0:
                     return self._error('`NAME` key word expected')
                 if mid1 < 0:
@@ -366,12 +367,24 @@ class MatexCompiler:
                 else:
                     theorem = tail[:mid1].strip()
                     counter = tail[mid1+9:mid2].strip()
-                if mid3 < 0:
+                if mid3 < 0 and mid4 < 0:
                     name = tail[mid2+5:].strip()
                     under = None
-                else:
+                    style = None
+                elif mid3 >= 0 and mid4 < 0:
                     name = tail[mid2+5:mid3].strip()
                     under = tail[mid3+6:].strip()
+                    style = None
+                elif mid3 < 0 and mid4 >= 0:
+                    name = tail[mid2+5:mid4].strip()
+                    under = None
+                    style = tail[mid4+7:].strip()
+                else:
+                    name = tail[mid2+5:mid3].strip()
+                    under = tail[mid3+6:mid4].strip()
+                    style = tail[mid4+7:].strip()
+                if style is not None:
+                    self._print(r'\theoremstyle{%s}' % style, end='')
                 if counter is None and under is None:
                     self._print(r'\newtheorem{%s}{%s}' % (theorem, name))
                 elif counter is None and under is not None:
