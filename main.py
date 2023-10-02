@@ -171,7 +171,7 @@ class MatexCompiler:
                     result += r'\footnotesize '
                     upper = False
                 result += char.upper()
-            return result
+            return result + r'\normalsize '
 
     _output: StringIO
     _input: _Reader
