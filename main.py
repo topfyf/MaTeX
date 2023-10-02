@@ -7,7 +7,7 @@ from io import StringIO
 import sys
 
 
-VERSION = '1.3.1'
+VERSION = '1.3.2'
 AUTHOR = 'OrthoPole'
 YEAR = '2023'
 DESCRIPTION = 'A LaTeX preprocessor'
@@ -383,7 +383,9 @@ class MatexCompiler:
                     name = tail[mid2+5:mid3].strip()
                     under = tail[mid3+6:mid4].strip()
                     style = tail[mid4+7:].strip()
-                if style is not None:
+                if style is None:
+                    self._print(r'\theoremstyle{plain}', end='')
+                else:
                     self._print(r'\theoremstyle{%s}' % style, end='')
                 if counter is None and under is None:
                     self._print(r'\newtheorem{%s}{%s}' % (theorem, name))
