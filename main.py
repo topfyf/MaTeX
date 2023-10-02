@@ -135,6 +135,44 @@ class MatexCompiler:
             line = self.line()
             return head, tail
 
+    class _Executor:
+
+        def __init__(self, compiler):
+            self._compiler = compiler
+            self._globals = {
+                'upperlower': self._upperlower
+            }
+
+        def exec(self, code: str, variables: dict) -> bool:
+            try:
+                exec(code, self._globals, variables)
+            except:
+                return self._compiler._error(f'invalid python code')
+            return True
+
+        def eval(self, code: str, variables: dict) -> str:
+            try:
+                return eval(code, self._globals, variables)
+            except:
+                return self._compiler._error(f'invalid python code')
+
+        @staticmethod
+        def _upperlower(string: str) -> str:
+            result = ''
+            upper = True
+            for char in string:
+                if char == ' ':
+                    result += char
+                    continue
+                elif char == char.upper() and not upper:
+                    result += r'\normalsize '
+                    upper = True
+                elif char == char.lower() and upper:
+                    result += r'\footnotesize '
+                    upper = False
+                result += char.upper()
+            return result
+
     _output: StringIO
     _input: _Reader
     _out_info: TextIO
@@ -146,6 +184,7 @@ class MatexCompiler:
         self._out_info = info
         self._out_error = error
         self._out_warning = warning
+        self._executor = self._Executor(self)
 
     def _print(self, *args, **kwargs):
         print(*args, **kwargs, file=self._output)
@@ -212,7 +251,7 @@ class MatexCompiler:
                         if j == len(string):
                             raise UnmatchedBraces(i)
                         try:
-                            result += eval(string[i+1:j], kwargs)
+                            result += str(self._executor.eval(string[i+1:j], kwargs))
                         except Exception:
                             raise InvalidExpression(string[i+1:j])
                         i = j + 1
