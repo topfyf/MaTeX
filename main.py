@@ -7,7 +7,7 @@ from io import StringIO
 import sys
 
 
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 AUTHOR = 'OrthoPole'
 YEAR = '2023'
 DESCRIPTION = 'A LaTeX preprocessor'
