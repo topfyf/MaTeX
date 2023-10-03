@@ -631,7 +631,7 @@ class MatexCompiler:
                 case 'END':
                     return True
 
-                case '<?python':
+                case '<?PYTHON':
                     self._input.setmode('python')
                     if tail == '':
                         code = ''
