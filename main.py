@@ -633,13 +633,17 @@ class MatexCompiler:
 
                 case '<?python':
                     self._input.setmode('python')
-                    if tail != '':
-                        self._warn('unexpected code after `<?python` tag (ignored by compiler)')
-                    code = ''
-                    for line in self._input:
-                        if line.strip() == '?>':
-                            break
-                        code += line
+                    if tail == '':
+                        code = ''
+                        for line in self._input:
+                            if line.strip() == '?>':
+                                break
+                            code += line
+                    elif tail[-2:] == '?>':
+                        code = tail[:-2]
+                    else:
+                        self._warn(f'`?>` expected at the end of a single-line python code')
+                        code = tail
                     if not self._executor.exec(code, kwargs):
                         return False
                     self._input.setmode('matex')
